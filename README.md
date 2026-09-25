@@ -82,7 +82,36 @@ For each chat message, FastAPI loads the session's structured state and conversa
 - Node.js `^20.19.0` or `>=22.12.0`
 - npm
 - A Groq API key
-- A reachable MongoDB deployment and connection URI
+- A MongoDB Atlas cluster and database connection URI
+
+## Getting API and database credentials
+
+### Groq API key
+
+1. Open the [Groq Console](https://console.groq.com/) and sign in or create an account.
+2. Open **API Keys** from the console navigation.
+3. Create a new API key and copy it when shown.
+4. Add the key and configured model to your local `.env` file:
+
+```dotenv
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=qwen/qwen3.8-27b
+```
+
+### MongoDB Atlas connection
+
+1. Open [MongoDB Atlas](https://www.mongodb.com/atlas), sign in, and create or open a cluster.
+2. Open **Database Access**, create a database user, and grant the read/write access required by this application.
+3. Open **Network Access** and allow connections from the development machine.
+4. Return to **Clusters**, select **Connect**, then choose **Drivers** and **Python**.
+5. Copy the connection string and replace the username, password, and cluster host placeholders.
+6. Add it to the local `.env` file:
+
+```dotenv
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/document_intake
+```
+
+Never commit `.env`, API keys, database passwords, or complete connection strings. The repository includes `.env.example` only as a safe template.
 
 ## Environment variables
 
@@ -105,9 +134,34 @@ The application reads `.env` from the repository root. `.env.example` contains n
 
 ## Setup and run
 
+The complete setup order is:
+
+**Clone repository → create Groq API key → create MongoDB Atlas user and cluster → copy `.env.example` to `.env` → fill credentials → install backend dependencies → install frontend dependencies → start backend → start frontend → open browser**
+
 The following PowerShell commands match the repository layout.
 
-### 1. Backend setup
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/shiv0666/Document-Intake-Assistant.git
+cd Document-Intake-Assistant
+```
+
+### 2. Create the external credentials
+
+Create the Groq API key and MongoDB Atlas connection described in [Getting API and database credentials](#getting-api-and-database-credentials).
+
+### 3. Create the local environment file
+
+From the repository root:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` and provide `GROQ_API_KEY` and `MONGODB_URI`. Keep `GROQ_MODEL=qwen/qwen3.8-27b` unless intentionally overriding the configured model.
+
+### 4. Install backend dependencies
 
 From the repository root:
 
@@ -119,7 +173,7 @@ python -m pip install -r backend\requirements.txt
 
 On macOS or Linux, activate the environment with `source .venv/bin/activate` and use `/` in paths.
 
-### 2. Frontend setup
+### 5. Install frontend dependencies
 
 ```powershell
 cd frontend
@@ -127,7 +181,7 @@ npm ci
 cd ..
 ```
 
-### 3. Start the backend
+### 6. Start the backend
 
 Open a terminal with the root virtual environment activated:
 
@@ -138,7 +192,7 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 The API is available at `http://127.0.0.1:8000`. Health status is available at `http://127.0.0.1:8000/api/health`.
 
-### 4. Start the frontend
+### 7. Start the frontend
 
 Open a second terminal:
 
@@ -146,6 +200,8 @@ Open a second terminal:
 cd frontend
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
+
+### 8. Open the application
 
 Open `http://127.0.0.1:5173` in a browser. The frontend sends chat requests to `http://127.0.0.1:8000`.
 
